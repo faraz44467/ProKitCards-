@@ -1,0 +1,395 @@
+/* ─── Reset & Base ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #05080f;
+  --surface:   #0d1220;
+  --border:    rgba(255,255,255,0.07);
+  --gold1:     #d4a843;
+  --gold2:     #f5d978;
+  --gold3:     #a07020;
+  --text:      #e8eaf0;
+  --muted:     #7a8898;
+  --accent:    #00d4ff;
+  --card-c1:   #d4a843;
+  --card-c2:   #a07020;
+  --card-c3:   #f5d978;
+  --font-head: 'Bebas Neue', sans-serif;
+  --font-body: 'Rajdhani', sans-serif;
+  --font-card: 'Orbitron', sans-serif;
+}
+
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ─── Background FX ─────────────────────────────────────────────── */
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+.bg-glow {
+  position: fixed; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,212,255,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────── */
+header {
+  position: relative; z-index: 10;
+  text-align: center;
+  padding: 2.5rem 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: var(--font-head);
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+.logo-pro  { color: var(--accent); }
+.logo-kit  { color: #fff; }
+.logo-cards {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--gold1);
+}
+.tagline {
+  margin-top: .4rem;
+  font-size: .95rem;
+  color: var(--muted);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+/* ─── Main Layout ────────────────────────────────────────────────── */
+main {
+  position: relative; z-index: 10;
+  display: flex;
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  padding: 0 1.5rem;
+  align-items: flex-start;
+}
+
+/* ─── Panels ─────────────────────────────────────────────────────── */
+.editor-panel, .preview-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.8rem;
+}
+.editor-panel { flex: 1.1; }
+.preview-panel { flex: .9; position: sticky; top: 1.5rem; }
+
+.panel-title {
+  font-family: var(--font-head);
+  font-size: 1.4rem;
+  letter-spacing: .1em;
+  color: var(--accent);
+  margin-bottom: 1.4rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: .7rem;
+}
+
+/* ─── Card Type Grid ─────────────────────────────────────────────── */
+.card-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5rem;
+}
+.type-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: .88rem;
+  font-weight: 600;
+  padding: .5rem .3rem;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .04em;
+}
+.type-btn:hover { background: rgba(0,212,255,0.08); border-color: var(--accent); }
+.type-btn.active {
+  background: rgba(0,212,255,0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ─── Form Fields ────────────────────────────────────────────────── */
+.field-group { margin-bottom: 1.1rem; }
+.field-group label {
+  display: block;
+  font-size: .78rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: .4rem;
+  font-weight: 600;
+}
+.field-row { display: flex; gap: .8rem; }
+.field-group.half { flex: 1; }
+
+.text-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: .55rem .8rem;
+  outline: none;
+  transition: border-color .2s;
+}
+.text-input:focus { border-color: var(--accent); }
+.text-input option { background: #0d1220; }
+
+/* ─── Upload Zone ────────────────────────────────────────────────── */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  transition: border-color .2s;
+}
+.upload-zone:hover { border-color: var(--accent); }
+.upload-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.2rem;
+  cursor: pointer;
+  gap: .25rem;
+}
+.upload-icon { font-size: 1.8rem; }
+.upload-inner span { font-weight: 600; font-size: .95rem; }
+.upload-inner small { color: var(--muted); font-size: .78rem; }
+
+/* ─── Stats Grid ─────────────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .6rem;
+}
+.stat-input-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .5rem .6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .2rem;
+}
+.stat-label {
+  font-size: .7rem;
+  letter-spacing: .14em;
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.stat-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--gold1);
+  font-family: var(--font-head);
+  font-size: 1.3rem;
+  text-align: center;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.stat-input::-webkit-outer-spin-button,
+.stat-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* ─── Download Button ────────────────────────────────────────────── */
+.download-btn {
+  width: 100%;
+  margin-top: .4rem;
+  padding: .9rem;
+  background: linear-gradient(135deg, var(--gold3), var(--gold1));
+  border: none;
+  border-radius: 10px;
+  color: #0d0800;
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  letter-spacing: .1em;
+  cursor: pointer;
+  transition: opacity .2s, transform .15s;
+}
+.download-btn:hover { opacity: .9; transform: translateY(-1px); }
+.download-btn:active { transform: translateY(0); }
+
+/* ─── Preview Panel ──────────────────────────────────────────────── */
+.card-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0 .5rem;
+}
+.preview-hint {
+  text-align: center;
+  font-size: .78rem;
+  color: var(--muted);
+  letter-spacing: .1em;
+  margin-top: .8rem;
+}
+
+/* ─── FIFA Card ──────────────────────────────────────────────────── */
+.fifa-card {
+  position: relative;
+  width: 220px;
+  height: 310px;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .3s;
+  box-shadow: 0 20px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.08);
+}
+.fifa-card:hover { transform: scale(1.04) rotate(-1deg); }
+
+.card-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, var(--card-c1) 0%, var(--card-c2) 55%, var(--card-c3) 100%);
+  z-index: 0;
+  transition: background .4s;
+}
+.card-shine {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,.18) 0%,
+    transparent 50%,
+    rgba(0,0,0,.18) 100%);
+  pointer-events: none;
+}
+
+.card-top {
+  position: relative; z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 14px 0 0 14px;
+  gap: 2px;
+}
+.card-rating {
+  font-family: var(--font-head);
+  font-size: 2.4rem;
+  line-height: 1;
+  color: rgba(0,0,0,.75);
+  text-shadow: 1px 1px 0 rgba(255,255,255,.2);
+}
+.card-pos {
+  font-family: var(--font-head);
+  font-size: 1rem;
+  color: rgba(0,0,0,.65);
+  letter-spacing: .08em;
+}
+.card-flag { font-size: 1.2rem; margin-top: 3px; }
+
+.card-photo-wrap {
+  position: relative; z-index: 2;
+  display: flex;
+  justify-content: center;
+  margin-top: -10px;
+}
+.card-photo {
+  width: 130px; height: 120px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.card-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+.photo-placeholder {
+  font-size: 5rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.4));
+}
+
+.card-name {
+  position: relative; z-index: 2;
+  text-align: center;
+  font-family: var(--font-head);
+  font-size: 1.35rem;
+  letter-spacing: .12em;
+  color: rgba(0,0,0,.8);
+  margin-top: 4px;
+  text-shadow: 0 1px 0 rgba(255,255,255,.3);
+}
+
+.card-divider {
+  position: relative; z-index: 2;
+  height: 1px;
+  background: rgba(0,0,0,.2);
+  margin: 6px 14px;
+}
+
+.card-stats {
+  position: relative; z-index: 2;
+  display: flex;
+  justify-content: space-around;
+  padding: 4px 10px;
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.stat-item .sv {
+  font-family: var(--font-head);
+  font-size: 1.05rem;
+  color: rgba(0,0,0,.8);
+  line-height: 1;
+}
+.stat-item .sk {
+  font-family: var(--font-body);
+  font-size: .6rem;
+  font-weight: 700;
+  color: rgba(0,0,0,.55);
+  letter-spacing: .06em;
+}
+
+.card-club {
+  position: relative; z-index: 2;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.5);
+  margin-top: 4px;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────────── */
+footer {
+  position: relative; z-index: 10;
+  text-align: center;
+  padding: 1.8rem 1rem;
+  border-top: 1px solid var(--border);
+  font-size: .8rem;
+  color: var(--muted);
+  letter-spacing: .06em;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 760px) {
+  main { flex-direction: column-reverse; }
+  .preview-panel { position: static; }
+}
