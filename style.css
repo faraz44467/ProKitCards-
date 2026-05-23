@@ -283,6 +283,7 @@ body {
   width: 100%; background: transparent; border: none;
   color: var(--gold1); font-family: var(--font-h);
   font-size: 1.25rem; text-align: center; outline: none;
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 .stat-input::-webkit-outer-spin-button,
