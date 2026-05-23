@@ -1,2 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProKitCards — FIFA Card Generator</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- Animated background -->
+  <div class="bg-wrap">
+    <div class="bg-grid"></div>
+    <div class="bg-orb orb1"></div>
+    <div class="bg-orb orb2"></div>
+    <div class="bg-orb orb3"></div>
+    <div class="particles" id="particles"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-pro">PRO</span><span class="logo-kit">KIT</span><span class="logo-cards">CARDS</span>
+        <div class="logo-badge">v2</div>
+      </div>
+      <p class="tagline">Build • Compare • Dominate</p>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btnSingle" onclick="setMode('single')">
+          <span class="mode-icon">🃏</span> Single Card
+        </button>
+        <button class="mode-btn" id="btnCompare" onclick="setMode('compare')">
+          <span class="mode-icon">⚔️</span> Compare Cards
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SINGLE MODE -->
+  <div class="app-container" id="singleMode">
+    <div class="editor-wrap">
+
+      <section class="editor-panel glass">
+        <h2 class="panel-title">✦ Card Editor</h2>
+
+        <div class="field-group">
+          <label>Card Type</label>
+          <div class="card-type-grid" id="typeGrid1">
+            <button class="type-btn active" data-card="1" data-color="#d4a843,#7a4f00,#f5d978" onclick="selectType(this,1)">⭐ Gold</button>
+            <button class="type-btn" data-card="1" data-color="#b0b8c8,#5a6878,#dde4f0" onclick="selectType(this,1)">🥈 Silver</button>
+            <button class="type-btn" data-card="1" data-color="#1a1aff,#0000aa,#7ab4ff" onclick="selectType(this,1)">👑 TOTY</button>
+            <button class="type-btn" data-card="1" data-color="#2ecc71,#1a7a44,#a8f0c8" onclick="selectType(this,1)">🔥 In Form</button>
+            <button class="type-btn" data-card="1" data-color="#b44aff,#6600cc,#e0aaff" onclick="selectType(this,1)">💎 Icon</button>
+            <button class="type-btn" data-card="1" data-color="#ff4040,#aa0000,#ffaaaa" onclick="selectType(this,1)">🎖️ TOTS</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Player Photo</label>
+          <div class="upload-zone" onclick="document.getElementById('photo1').click()">
+            <input type="file" id="photo1" accept="image/*" hidden onchange="loadPhoto(this,1)"/>
+            <div class="upload-inner">
+              <div class="upload-icon">📸</div>
+              <span>Tap to upload</span>
+              <small>PNG · JPG · WEBP</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Player Name</label>
+          <input type="text" class="text-input" placeholder="e.g. MBAPPE" maxlength="14" oninput="updateCard(1)" id="name1"/>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group half">
+            <label>Rating</label>
+            <input type="number" class="text-input" id="rating1" placeholder="99" min="1" max="99" oninput="updateCard(1)"/>
+          </div>
+          <div class="field-group half">
+            <label>Position</label>
+            <select class="text-input" id="pos1" onchange="updateCard(1)">
+              <option>ST</option><option>CF</option><option>LW</option><option>RW</option>
+              <option>CAM</option><option>CM</option><option>CDM</option>
+              <option>LB</option><option>RB</option><option>CB</option><option>GK</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group half">
+            <label>Club</label>
+            <input type="text" class="text-input" id="club1" placeholder="e.g. PSG" oninput="updateCard(1)"/>
+          </div>
+          <div class="field-group half">
+            <label>Nation</label>
+            <select class="text-input" id="nation1" onchange="updateCard(1)">
+              <option value="🇧🇷">🇧🇷 Brazil</option>
+              <option value="🇵🇹">🇵🇹 Portugal</option>
+              <option value="🇦🇷">🇦🇷 Argentina</option>
+              <option value="🇫🇷">🇫🇷 France</option>
+              <option value="🇩🇪">🇩🇪 Germany</option>
+              <option value="🇪🇸">🇪🇸 Spain</option>
+              <option value="🏴󠁧󠁢󠁥󠁮󠁧󠁿">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</option>
+              <option value="🇳🇱">🇳🇱 Netherlands</option>
+              <option value="🇧🇪">🇧🇪 Belgium</option>
+              <option value="🇮🇹">🇮🇹 Italy</option>
+              <option value="🇳🇴">🇳🇴 Norway</option>
+              <option value="🇸🇳">🇸🇳 Senegal</option>
+              <option value="🇧🇩">🇧🇩 Bangladesh</option>
+              <option value="🇯🇵">🇯🇵 Japan</option>
+              <option value="🇰🇷">🇰🇷 South Korea</option>
+              <option value="🇺🇸">🇺🇸 USA</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Stats</label>
+          <div class="stats-grid">
+            <div class="stat-input-item"><span class="stat-label">PAC</span><input type="number" id="s1-pac" class="stat-input" value="90" min="1" max="99" oninput="updateCard(1)"/></div>
+            <div class="stat-input-item"><span class="stat-label">SHO</span><input type="number" id="s1-sho" class="stat-input" value="88" min="1" max="99" oninput="updateCard(1)"/></div>
+            <div class="stat-input-item"><span class="stat-label">PAS</span><input type="number" id="s1-pas" class="stat-input" value="85" min="1" max="99" oninput="updateCard(1)"/></div>
+            <div class="stat-input-item"><span class="stat-label">DRI</span><input type="number" id="s1-dri" class="stat-input" value="92" min="1" max="99" oninput="updateCard(1)"/></div>
+            <div class="stat-input-item"><span class="stat-label">DEF</span><input type="number" id="s1-def" class="stat-input" value="35" min="1" max="99" oninput="updateCard(1)"/></div>
+            <div class="stat-input-item"><span class="stat-label">PHY</span><input type="number" id="s1-phy" class="stat-input" value="75" min="1" max="99" oninput="updateCard(1)"/></div>
+          </div>
+        </div>
+
+        <button class="download-btn" onclick="downloadCard('card1')">⬇ Download Card</button>
+      </section>
+
+      <section class="preview-panel">
+        <h2 class="panel-title">✦ Live Preview</h2>
+        <div class="card-wrapper">
+          <div class="fifa-card" id="card1">
+            <div class="card-bg" id="bg1"></div>
+            <div class="card-shine"></div>
+            <div class="card-top">
+              <div class="card-rating" id="cr1">90</div>
+              <div class="card-pos" id="cp1">ST</div>
+              <div class="card-flag" id="cf1">🇧🇷</div>
+            </div>
+            <div class="card-photo-wrap">
+              <div class="card-photo" id="cph1"><div class="photo-placeholder">👤</div></div>
+            </div>
+            <div class="card-name" id="cn1">PLAYER</div>
+            <div class="card-divider"></div>
+            <div class="card-stats" id="cst1">
+              <div class="stat-item"><span class="sv">90</span><span class="sk">PAC</span></div>
+              <div class="stat-item"><span class="sv">88</span><span class="sk">SHO</span></div>
+              <div class="stat-item"><span class="sv">85</span><span class="sk">PAS</span></div>
+              <div class="stat-item"><span class="sv">92</span><span class="sk">DRI</span></div>
+              <div class="stat-item"><span class="sv">35</span><span class="sk">DEF</span></div>
+              <div class="stat-item"><span class="sv">75</span><span class="sk">PHY</span></div>
+            </div>
+            <div class="card-club" id="ccl1">Club Name</div>
+          </div>
+        </div>
+        <p class="preview-hint">✦ Hover the card to tilt it</p>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- COMPARE MODE -->
+  <div class="app-container hidden" id="compareMode">
+    <div class="compare-header glass">
+      <h2>⚔️ Head-to-Head Card Battle</h2>
+      <p>Build two cards and see who wins each stat</p>
+    </div>
+
+    <div class="compare-grid">
+
+      <!-- Player A -->
+      <div class="compare-editor glass">
+        <h3 class="compare-editor-title player-a-title">🔵 Player A</h3>
+        <div class="field-group">
+          <label>Card Type</label>
+          <div class="card-type-grid" id="typeGrid2">
+            <button class="type-btn active" data-card="2" data-color="#d4a843,#7a4f00,#f5d978" onclick="selectType(this,2)">⭐ Gold</button>
+            <button class="type-btn" data-card="2" data-color="#b44aff,#6600cc,#e0aaff" onclick="selectType(this,2)">💎 Icon</button>
+            <button class="type-btn" data-card="2" data-color="#1a1aff,#0000aa,#7ab4ff" onclick="selectType(this,2)">👑 TOTY</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Photo</label>
+          <div class="upload-zone small" onclick="document.getElementById('photo2').click()">
+            <input type="file" id="photo2" accept="image/*" hidden onchange="loadPhoto(this,2)"/>
+            <div class="upload-inner"><div class="upload-icon">📸</div><span>Upload</span></div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Name</label>
+          <input type="text" class="text-input" id="name2" placeholder="PLAYER A" maxlength="14" oninput="updateCard(2);compareCards()"/>
+        </div>
+        <div class="field-row">
+          <div class="field-group half"><label>Rating</label><input type="number" class="text-input" id="rating2" placeholder="99" min="1" max="99" oninput="updateCard(2);compareCards()"/></div>
+          <div class="field-group half"><label>Position</label>
+            <select class="text-input" id="pos2" onchange="updateCard(2)">
+              <option>ST</option><option>CF</option><option>LW</option><option>RW</option>
+              <option>CAM</option><option>CM</option><option>CDM</option>
+              <option>LB</option><option>RB</option><option>CB</option><option>GK</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Nation</label>
+          <select class="text-input" id="nation2" onchange="updateCard(2)">
+            <option value="🇧🇷">🇧🇷 Brazil</option><option value="🇵🇹">🇵🇹 Portugal</option>
+            <option value="🇦🇷">🇦🇷 Argentina</option><option value="🇫🇷">🇫🇷 France</option>
+            <option value="🇩🇪">🇩🇪 Germany</option><option value="🇪🇸">🇪🇸 Spain</option>
+            <option value="🏴󠁧󠁢󠁥󠁮󠁧󠁿">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</option><option value="🇧🇩">🇧🇩 Bangladesh</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Stats</label>
+          <div class="stats-grid">
+            <div class="stat-input-item"><span class="stat-label">PAC</span><input type="number" id="s2-pac" class="stat-input" value="95" min="1" max="99" oninput="updateCard(2);compareCards()"/></div>
+            <div class="stat-input-item"><span class="stat-label">SHO</span><input type="number" id="s2-sho" class="stat-input" value="92" min="1" max="99" oninput="updateCard(2);compareCards()"/></div>
+            <div class="stat-input-item"><span class="stat-label">PAS</span><input type="number" id="s2-pas" class="stat-input" value="80" min="1" max="99" oninput="updateCard(2);compareCards()"/></div>
+            <div class="stat-input-item"><span class="stat-label">DRI</span><input type="number" id="s2-dri" class="stat-input" value="96" min="1" max="99" oninput="updateCard(2);compareCards()"/></div>
+            <div class="stat-input-item"><span class="stat-label">DEF</span><input type="number" id="s2-def" class="stat-input" value="30" min="1" max="99" oninput="updateCard(2);compareCards()"/></div>
+            <div class="stat-input-item"><span class="stat-label">PHY</span><input type="number" id="s2-phy" class="stat-input" value="78" min="1" max="99" oninput="updateCard(2);compareCards()"/></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center -->
+      <div class="compare-center">
+        <div class="vs-cards">
+          <div class="fifa-card mini" id="card2">
+            <div class="card-bg" id="bg2"></div>
+            <div class="card-shine"></div>
+            <div class="card-top"><div class="card-rating" id="cr2">95</div><div class="card-pos" id="cp2">ST</div><div class="card-flag" id="cf2">🇧🇷</div></div>
+            <div class="card-photo-wrap"><div class="card-photo" id="cph2"><div class="photo-placeholder">👤</div></div></div>
+            <div class="card-name" id="cn2">PLAYER A</div>
+            <div class="card-divider"></div>
+            <div class="card-stats" id="cst2">
+              <div class="stat-item"><span class="sv">95</span><span class="sk">PAC</span></div>
+              <div class="stat-item"><span class="sv">92</span><span class="sk">SHO</span></div>
+              <div class="stat-item"><span class="sv">80</span><span class="sk">PAS</span></div>
+              <div class="stat-item"><span class="sv">96</span><span class="sk">DRI</span></div>
+              <div class="stat-item"><span class="sv">30</span><span class="sk">DEF</span></div>
+              <div class="stat-item"><span class="sv">78</span><span class="sk">PHY</span></div>
+            </div>
+            <div class="card-club" id="ccl2">—</div>
+          </div>
+
+          <div class="vs-badge">VS</div>
+
+          <div class="fifa-card mini" id="card3">
+            <div class="card-bg" id="bg3"></div>
+            <div class="card-shine"></div>
+            <div class="card-top"><div class="card-rating" id="cr3">90</div><div class="card-pos" id="cp3">ST</div><div class="card-flag" id="cf3">🇵🇹</div></div>
+            <div class="card-photo-wrap"><div class="card-photo" id="cph3"><div class="photo-placeholder">👤</div></div></div>
+            <div class="card-name" id="cn3">PLAYER B</div>
+            <div class="card-divider"></div>
+            <div class="card-stats" id="cst3">
+              <div class="stat-item"><span class="sv">85</span><span class="sk">PAC</span></div>
+              <div class="stat-item"><span class="sv">94</span><span class="sk">SHO</span></div>
+              <div class="stat-item"><span class="sv">88</span><span class="sk">PAS</span></div>
+              <div class="stat-item"><span class="sv">90</span><span class="sk">DRI</span></div>
+              <div class="stat-item"><span class="sv">35</span><span class="sk">DEF</span></div>
+              <div class="stat-item"><span class="sv">77</span><span class="sk">PHY</span></div>
+            </div>
+            <div class="card-club" id="ccl3">—</div>
+          </div>
+        </div>
+
+        <div class="stat-bars" id="statBars">
+          <div class="stat-bar-row"><span class="bar-val a" id="bar-a-pac">95</span><div class="bar-track"><div class="bar-fill a" id="fill-a-pac"></div><div class="bar-fill b" id="fill-b-pac"></div></div><span class="bar-val b" id="bar-b-pac">85</span><span class="bar-label">PAC</span></div>
+          <div class="stat-bar-row"><span class="bar-val a" id="bar-a-sho">92</span><div class="bar-track"><div class="bar-fill a" id="fill-a-sho"></div><div class="bar-fill b" id="fill-b-sho"></div></div><span class="bar-val b" id="bar-b-sho">94</span><span class="bar-label">SHO</span></div>
+          <div class="stat-bar-row"><span class="bar-val a" id="bar-a-pas">80</span><div class="bar-track"><div class="bar-fill a" id="fill-a-pas"></div><div class="bar-fill b" id="fill-b-pas"></div></div><span class="bar-val b" id="bar-b-pas">88</span><span class="bar-label">PAS</span></div>
+          <div class="stat-bar-row"><span class="bar-val a" id="bar-a-dri">96</span><div class="bar-track"><div class="bar-fill a" id="fill-a-dri"></div><div class="bar-fill b" id="fill-b-dri"></div></div><span class="bar-val b" id="bar-b-dri">90</span><span class="bar-label">DRI</span></div>
+          <div class="stat-bar-row"><span class="bar-val a" id="bar-a-def">30</span><div class="bar-track"><div class="bar-fill a" id="fill-a-def"></div><div class="bar-fill b" id="fill-b-def"></div></div><span class="bar-val b" id="bar-b-def">35</span><span class="bar-label">DEF</span></div>
+          <div class="stat-bar-row"><span class="bar-val a" id="bar-a-phy">78</span><div class="bar-track"><div class="bar-fill a" id="fill-a-phy"></div><div class="bar-fill b" id="fill-b-phy"></div></div><span class="bar-val b" id="bar-b-phy">77</span><span class="bar-label">PHY</span></div>
+        </div>
+
+        <div class="winner-banner" id="winnerBanner">🏆 <span id="winnerName">PLAYER A wins!</span></div>
+      </div>
+
+      <!-- Player B -->
+      <div class="compare-editor glass">
+        <h3 class="compare-editor-title player-b-title">🔴 Player B</h3>
+        <div class="field-group">
+          <label>Card Type</label>
+          <div class="card-type-grid" id="typeGrid3">
+            <button class="type-btn active" data-card="3" data-color="#d4a843,#7a4f00,#f5d978" onclick="selectType(this,3)">⭐ Gold</button>
+            <button class="type-btn" data-card="3" data-color="#b44aff,#6600cc,#e0aaff" onclick="selectType(this,3)">💎 Icon</button>
+            <button class="type-btn" data-card="3" data-color="#ff4040,#aa0000,#ffaaaa" onclick="selectType(this,3)">🎖️ TOTS</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Photo</label>
+          <div class="upload-zone small" onclick="document.getElementById('photo3').click()">
+            <input type="file" id="photo3" accept="image/*" hidden onchange="loadPhoto(this,3)"/>
+            <div class="upload-inner"><div class="upload-icon">📸</div><span>Upload</span></div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Name</label>
+          <input type="text" class="text-input" id="name3" placeholder="PLAYER B" maxlength="14" oninput="updateCard(3);compareCards()"/>
+        </div>
+        <div class="field-row">
+          <div class="field-group half"><label>Rating</label><input type="number" class="text-input" id="rating3" placeholder="99" min="1" max="99" oninput="updateCard(3);compareCards()"/></div>
+          <div class="field-group half"><label>Position</label>
+            <select class="text-input" id="pos3" onchange="updateCard(3)">
+              <option>ST</option><option>CF</option><option>LW</option><option>RW</option>
+              <option>CAM</option><option>CM</option><option>CDM</option>
+              <option>LB</option><option>RB</option><option>CB</option><option>GK</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Nation</label>
+          <select class="text-input" id="nation3" onchange="updateCard(3)">
+            <option value="🇵🇹">🇵🇹 Portugal</option><option value="🇧🇷">🇧🇷 Brazil</option>
+            <option value="🇦🇷">🇦🇷 Argentina</option><option value="🇫🇷">🇫🇷 France</option>
+            <option value="🇩🇪">🇩🇪 Germany</option><option value="🇪🇸">🇪🇸 Spain</option>
+            <option value="🏴󠁧󠁢󠁥󠁮󠁧󠁿">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</option><option value="🇧🇩">🇧🇩 Bangladesh</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Stats</label>
+          <div class="stats-grid">
+            <div class="stat-input-item"><span class="stat-label">PAC</span><input type="number" id="s3-pac" class="stat-input" value="85" min="1" max="99" oninput="updateCard(3);compareCards()"/></div>
+            <div class="stat-input-item"><span class="stat-label">SHO</span><input type="number" id="s3-sho" class="stat-input" value="94" min="1" max="99" oninput="updateCard(3);compareCards()"/></div>
+            <div class="stat-input-item"><span class="stat-label">PAS</span><input type="number" id="s3-pas" class="stat-input" value="88" min="1" max="99" oninput="updateCard(3);compareCards()"/></div>
+            <div class="stat-input-item"><span class="stat-label">DRI</span><input type="number" id="s3-dri" class="stat-input" value="90" min="1" max="99" oninput="updateCard(3);compareCards()"/></div>
+            <div class="stat-input-item"><span class="stat-label">DEF</span><input type="number" id="s3-def" class="stat-input" value="35" min="1" max="99" oninput="updateCard(3);compareCards()"/></div>
+            <div class="stat-input-item"><span class="stat-label">PHY</span><input type="number" id="s3-phy" class="stat-input" value="77" min="1" max="99" oninput="updateCard(3);compareCards()"/></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>ProKitCards v2 &copy; 2025 &mdash; For fans, by fans. Not affiliated with EA Sports.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

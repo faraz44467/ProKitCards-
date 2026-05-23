@@ -1,125 +1,221 @@
-// ─── ProKitCards — script.js ────────────────────────────────────────
+// ─── ProKitCards v2 — script.js ────────────────────────────────────
 
-// Card type colour palettes [gradient-start, gradient-mid, gradient-end]
-const CARD_THEMES = {
-  gold:   ['#d4a843', '#a07020', '#f5d978'],
-  silver: ['#b0b8c8', '#7a8898', '#dde4f0'],
-  toty:   ['#1a1aff', '#0000aa', '#7ab4ff'],
-  inform: ['#2ecc71', '#1a7a44', '#a8f0c8'],
-  icon:   ['#b44aff', '#6600cc', '#e0aaff'],
-  tots:   ['#ff4040', '#aa0000', '#ffaaaa'],
-};
+// ─── Particles ───────────────────────────────────────────────────────
+(function spawnParticles() {
+  const container = document.getElementById('particles');
+  if (!container) return;
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      width: ${Math.random() * 3 + 1}px;
+      height: ${Math.random() * 3 + 1}px;
+      animation-duration: ${Math.random() * 12 + 8}s;
+      animation-delay: ${Math.random() * 10}s;
+      opacity: 0;
+    `;
+    container.appendChild(p);
+  }
+})();
 
-// ─── Element References ──────────────────────────────────────────────
-const playerName    = document.getElementById('playerName');
-const playerRating  = document.getElementById('playerRating');
-const playerPos     = document.getElementById('playerPosition');
-const playerNation  = document.getElementById('playerNation');
-const playerClub    = document.getElementById('playerClub');
-const photoInput    = document.getElementById('photoInput');
+// ─── Mode Toggle ─────────────────────────────────────────────────────
+function setMode(mode) {
+  const single  = document.getElementById('singleMode');
+  const compare = document.getElementById('compareMode');
+  const btnS    = document.getElementById('btnSingle');
+  const btnC    = document.getElementById('btnCompare');
 
-const cardName    = document.getElementById('cardName');
-const cardRating  = document.getElementById('cardRating');
-const cardPos     = document.getElementById('cardPos');
-const cardFlag    = document.getElementById('cardFlag');
-const cardClub    = document.getElementById('cardClub');
-const cardPhoto   = document.getElementById('cardPhoto');
-const cardStats   = document.getElementById('cardStats');
-const cardBg      = document.querySelector('.card-bg');
+  if (mode === 'single') {
+    single.classList.remove('hidden');
+    compare.classList.add('hidden');
+    btnS.classList.add('active');
+    btnC.classList.remove('active');
+  } else {
+    compare.classList.remove('hidden');
+    single.classList.add('hidden');
+    btnC.classList.add('active');
+    btnS.classList.remove('active');
+    compareCards();
+  }
+}
 
-const statIds = ['pac','sho','pas','dri','def','phy'];
+// ─── Card Type Selection ─────────────────────────────────────────────
+function selectType(btn, cardNum) {
+  const grid = document.getElementById('typeGrid' + cardNum);
+  grid.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const [c1, c2, c3] = btn.dataset.color.split(',');
+  applyTheme(cardNum, c1, c2, c3);
+}
 
-// ─── Live Update Functions ────────────────────────────────────────────
+function applyTheme(cardNum, c1, c2, c3) {
+  const bg = document.getElementById('bg' + cardNum);
+  if (bg) {
+    bg.style.background = `linear-gradient(160deg, ${c1} 0%, ${c2} 55%, ${c3} 100%)`;
+  }
+}
 
-function updateName()   { cardName.textContent   = playerName.value.toUpperCase() || 'PLAYER'; }
-function updateRating() { cardRating.textContent  = playerRating.value || '90'; }
-function updatePos()    { cardPos.textContent     = playerPos.value; }
-function updateFlag()   { cardFlag.textContent    = playerNation.value; }
-function updateClub()   { cardClub.textContent    = playerClub.value || 'Club Name'; }
+// ─── Photo Upload ─────────────────────────────────────────────────────
+function loadPhoto(input, cardNum) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const photoEl = document.getElementById('cph' + cardNum);
+    if (photoEl) {
+      photoEl.innerHTML = `<img src="${e.target.result}" alt="Player"/>`;
+    }
+  };
+  reader.readAsDataURL(file);
+}
 
-function updateStats() {
-  const statEls = cardStats.querySelectorAll('.stat-item');
-  statIds.forEach((id, i) => {
-    const input = document.getElementById('stat-' + id);
-    if (input && statEls[i]) {
-      statEls[i].querySelector('.sv').textContent = input.value || '0';
+// ─── Update Card Preview ──────────────────────────────────────────────
+function updateCard(n) {
+  const get = id => document.getElementById(id);
+
+  // Name
+  const nameEl = get('name' + n);
+  if (nameEl && get('cn' + n)) {
+    get('cn' + n).textContent = (nameEl.value || 'PLAYER').toUpperCase();
+  }
+
+  // Rating
+  const ratingEl = get('rating' + n);
+  if (ratingEl && get('cr' + n)) {
+    get('cr' + n).textContent = ratingEl.value || '—';
+  }
+
+  // Position
+  const posEl = get('pos' + n);
+  if (posEl && get('cp' + n)) {
+    get('cp' + n).textContent = posEl.value;
+  }
+
+  // Nation
+  const nationEl = get('nation' + n);
+  if (nationEl && get('cf' + n)) {
+    get('cf' + n).textContent = nationEl.value;
+  }
+
+  // Club
+  const clubEl = get('club' + n);
+  if (clubEl && get('ccl' + n)) {
+    get('ccl' + n).textContent = clubEl.value || '—';
+  }
+
+  // Stats
+  const statKeys = ['pac','sho','pas','dri','def','phy'];
+  const statEls  = get('cst' + n) ? get('cst' + n).querySelectorAll('.stat-item') : [];
+  statKeys.forEach((key, i) => {
+    const inp = get('s' + n + '-' + key);
+    if (inp && statEls[i]) {
+      statEls[i].querySelector('.sv').textContent = inp.value || '0';
     }
   });
 }
 
-function setCardTheme(colors) {
-  document.documentElement.style.setProperty('--card-c1', colors[0]);
-  document.documentElement.style.setProperty('--card-c2', colors[1]);
-  document.documentElement.style.setProperty('--card-c3', colors[2]);
-  cardBg.style.background =
-    `linear-gradient(160deg, ${colors[0]} 0%, ${colors[1]} 55%, ${colors[2]} 100%)`;
+// ─── Compare Logic ────────────────────────────────────────────────────
+const STATS = ['pac','sho','pas','dri','def','phy'];
+
+function compareCards() {
+  let winsA = 0, winsB = 0;
+
+  STATS.forEach(stat => {
+    const aVal = parseInt(document.getElementById('s2-' + stat)?.value) || 0;
+    const bVal = parseInt(document.getElementById('s3-' + stat)?.value) || 0;
+    const total = aVal + bVal || 1;
+
+    // Update bar values
+    const barA = document.getElementById('bar-a-' + stat);
+    const barB = document.getElementById('bar-b-' + stat);
+    if (barA) barA.textContent = aVal;
+    if (barB) barB.textContent = bVal;
+
+    // Fill bars proportionally
+    const fillA = document.getElementById('fill-a-' + stat);
+    const fillB = document.getElementById('fill-b-' + stat);
+    const pctA  = Math.round((aVal / total) * 100);
+    const pctB  = 100 - pctA;
+    if (fillA) fillA.style.width = pctA + '%';
+    if (fillB) fillB.style.width = pctB + '%';
+
+    // Track wins
+    if (aVal > bVal) winsA++;
+    else if (bVal > aVal) winsB++;
+  });
+
+  // Winner banner
+  const banner = document.getElementById('winnerBanner');
+  const nameEl = document.getElementById('winnerName');
+  if (!banner || !nameEl) return;
+
+  const nameA = (document.getElementById('name2')?.value || 'PLAYER A').toUpperCase();
+  const nameB = (document.getElementById('name3')?.value || 'PLAYER B').toUpperCase();
+
+  if (winsA > winsB) {
+    nameEl.textContent = nameA + ' wins!';
+    banner.style.color = 'var(--a-color)';
+    banner.style.borderColor = 'rgba(0,212,255,.4)';
+    banner.style.background  = 'rgba(0,212,255,.08)';
+  } else if (winsB > winsA) {
+    nameEl.textContent = nameB + ' wins!';
+    banner.style.color = 'var(--b-color)';
+    banner.style.borderColor = 'rgba(255,64,96,.4)';
+    banner.style.background  = 'rgba(255,64,96,.08)';
+  } else {
+    nameEl.textContent = "It's a draw!";
+    banner.style.color = 'var(--gold2)';
+    banner.style.borderColor = 'rgba(212,168,67,.3)';
+    banner.style.background  = 'rgba(212,168,67,.08)';
+  }
 }
 
-// ─── Card Type Buttons ────────────────────────────────────────────────
-document.querySelectorAll('.type-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const colors = btn.dataset.color.split(',');
-    setCardTheme(colors);
+// ─── 3D Tilt on Mouse Move ────────────────────────────────────────────
+document.querySelectorAll('.fifa-card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width  - 0.5;
+    const y = (e.clientY - rect.top)  / rect.height - 0.5;
+    card.style.transform = `perspective(600px) rotateY(${x * 18}deg) rotateX(${-y * 18}deg) scale(1.06)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
   });
 });
 
-// ─── Photo Upload ─────────────────────────────────────────────────────
-photoInput.addEventListener('change', () => {
-  const file = photoInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    cardPhoto.innerHTML = `<img src="${e.target.result}" alt="Player photo" />`;
-  };
-  reader.readAsDataURL(file);
-});
+// ─── Download Card ────────────────────────────────────────────────────
+function downloadCard(cardId) {
+  const card = document.getElementById(cardId);
+  const playerName = document.getElementById('name1')?.value || 'player';
 
-// ─── Event Listeners ─────────────────────────────────────────────────
-playerName.addEventListener('input',   updateName);
-playerRating.addEventListener('input', updateRating);
-playerPos.addEventListener('change',   updatePos);
-playerNation.addEventListener('change',updateFlag);
-playerClub.addEventListener('input',   updateClub);
-statIds.forEach(id => {
-  const el = document.getElementById('stat-' + id);
-  if (el) el.addEventListener('input', updateStats);
-});
-
-// ─── Download Card ─────────────────────────────────────────────────────
-document.getElementById('downloadBtn').addEventListener('click', () => {
-  const card = document.getElementById('fifaCard');
-
-  // Use html2canvas if available, otherwise prompt user
-  if (typeof html2canvas !== 'undefined') {
+  const doCapture = () => {
     html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null }).then(canvas => {
       const link = document.createElement('a');
-      link.download = (playerName.value || 'player') + '_prokit_card.png';
+      link.download = playerName.toLowerCase() + '_prokit_card.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
     });
+  };
+
+  if (typeof html2canvas !== 'undefined') {
+    doCapture();
   } else {
-    // Fallback: load html2canvas dynamically
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    script.onload = () => {
-      html2canvas(card, { scale: 3, useCORS: true, backgroundColor: null }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = (playerName.value || 'player') + '_prokit_card.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      });
-    };
+    script.onload = doCapture;
     document.head.appendChild(script);
   }
-});
+}
 
-// ─── Initialise Defaults ───────────────────────────────────────────────
-updateName();
-updateRating();
-updatePos();
-updateFlag();
-updateClub();
-updateStats();
-setCardTheme(CARD_THEMES.gold);
+// ─── Init ────────────────────────────────────────────────────────────
+(function init() {
+  applyTheme(1, '#d4a843', '#7a4f00', '#f5d978');
+  applyTheme(2, '#d4a843', '#7a4f00', '#f5d978');
+  applyTheme(3, '#d4a843', '#7a4f00', '#f5d978');
+
+  updateCard(1);
+  updateCard(2);
+  updateCard(3);
+  compareCards();
+})();
