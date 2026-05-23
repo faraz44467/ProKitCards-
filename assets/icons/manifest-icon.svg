@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4a843"/>
+      <stop offset="100%" stop-color="#00d4ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="url(#g)"/>
+  <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-family="Bebas Neue, sans-serif" font-size="120" fill="#05060b">P</text>
+  <text x="50%" y="77%" text-anchor="middle" font-family="Rajdhani, sans-serif" font-size="32" fill="#ffffff">PRO</text>
+</svg>
