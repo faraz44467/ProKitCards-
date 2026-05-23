@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProKitCards — Open a Pack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #04060f;
+      --gold1:  #d4a843;
+      --gold2:  #f5e07a;
+      --gold3:  #7a4f00;
+      --accent: #00d4ff;
+      --text:   #e8eaf6;
+      --muted:  #556070;
+      --font-h: 'Bebas Neue', sans-serif;
+      --font-b: 'Rajdhani', sans-serif;
+      --font-o: 'Orbitron', sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-b);
+      overflow-x: hidden;
+    }
+
+    .bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,255,.07) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(180,74,255,.07) 0%, transparent 60%);
+    }
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(0,212,255,.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,.02) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    #sparks { position: fixed; inset: 0; z-index: 50; pointer-events: none; }
+
+    nav {
+      position: relative; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      background: rgba(4,6,15,.85);
+      backdrop-filter: blur(16px);
+    }
+    .nav-logo { font-family: var(--font-h); font-size: 1.6rem; letter-spacing: .1em; }
+    .nav-logo span:nth-child(1) { color: var(--accent); }
+    .nav-logo span:nth-child(3) { color: transparent; -webkit-text-stroke: 1px var(--gold1); }
+    .nav-back {
+      font-family: var(--font-b); font-weight: 700;
+      font-size: .9rem; letter-spacing: .1em;
+      color: var(--muted); text-decoration: none;
+      border: 1px solid rgba(255,255,255,.08);
+      padding: .4rem 1rem; border-radius: 8px;
+      transition: all .2s;
+    }
+    .nav-back:hover { color: var(--text); border-color: var(--accent); }
+
+    .stage {
+      position: relative; z-index: 10;
+      min-height: calc(100vh - 60px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem 1rem;
+      gap: 2rem;
+    }
+
+    .screen { display: none; flex-direction: column; align-items: center; gap: 1.5rem; width: 100%; }
+    .screen.active { display: flex; }
+
+    /* ── Screen 1: Choose Pack ── */
+    .choose-title {
+      font-family: var(--font-h);
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      letter-spacing: .12em; text-align: center;
+    }
+    .choose-title span { color: var(--gold2); }
+    .choose-sub { color: var(--muted); letter-spacing: .1em; font-size: .9rem; text-transform: uppercase; }
+
+    .pack-selection { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+    .pack-choice {
+      width: 160px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px; padding: 1.4rem 1rem;
+      cursor: pointer; transition: all .3s;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .pack-choice::before {
+      content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .3s;
+    }
+    .pack-choice.gold::before   { background: radial-gradient(circle at 50% 0%, rgba(212,168,67,.3), transparent 70%); }
+    .pack-choice.icon::before   { background: radial-gradient(circle at 50% 0%, rgba(180,74,255,.3), transparent 70%); }
+    .pack-choice.toty::before   { background: radial-gradient(circle at 50% 0%, rgba(0,212,255,.3), transparent 70%); }
+    .pack-choice.inform::before { background: radial-gradient(circle at 50% 0%, rgba(46,204,113,.3), transparent 70%); }
+    .pack-choice:hover { transform: translateY(-6px); border-color: rgba(255,255,255,.2); }
+    .pack-choice:hover::before { opacity: 1; }
+    .pack-choice .pack-icon { font-size: 2.8rem; margin-bottom: .5rem; }
+    .pack-choice .pack-name { font-family: var(--font-h); font-size: 1.1rem; letter-spacing: .1em; margin-bottom: .3rem; }
+    .pack-choice .pack-desc { font-size: .75rem; color: var(--muted); }
+    .pack-choice .pack-cards-count { margin-top: .6rem; font-family: var(--font-o); font-size: .65rem; letter-spacing: .1em; color: var(--gold1); }
+    .pack-choice.gold   .pack-name { color: var(--gold2); }
+    .pack-choice.icon   .pack-name { color: #e0aaff; }
+    .pack-choice.toty   .pack-name { color: var(--accent); }
+    .pack-choice.inform .pack-name { color: #a8f0c8; }
+
+    /* ── Screen 2: Open Pack ── */
+    .pack-stage { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+    .pack-title-small { font-family: var(--font-h); font-size: 1.2rem; letter-spacing: .2em; color: var(--muted); text-transform: uppercase; }
+
+    .pack-wrap { perspective: 1000px; cursor: pointer; }
+    .pack-object {
+      width: 220px; height: 300px; border-radius: 16px;
+      position: relative; transform-style: preserve-3d;
+      transition: transform .8s cubic-bezier(.23,1,.32,1);
+      animation: packFloat 3s ease-in-out infinite;
+    }
+    @keyframes packFloat {
+      0%,100% { transform: translateY(0) rotateY(-5deg); }
+      50%      { transform: translateY(-12px) rotateY(5deg); }
+    }
+    .pack-object.shake { animation: packShake .5s ease-in-out; }
+    @keyframes packShake {
+      0%,100% { transform: translateX(0) rotateZ(0); }
+      20% { transform: translateX(-8px) rotateZ(-3deg); }
+      40% { transform: translateX(8px) rotateZ(3deg); }
+      60% { transform: translateX(-6px) rotateZ(-2deg); }
+      80% { transform: translateX(6px) rotateZ(2deg); }
+    }
+    .pack-object.open { animation: packOpen .6s ease-in-out forwards; }
+    @keyframes packOpen {
+      0%   { transform: scale(1) rotateY(0); }
+      50%  { transform: scale(1.15) rotateY(20deg); }
+      100% { transform: scale(0) rotateY(90deg); opacity: 0; }
+    }
+
+    .pack-face {
+      width: 100%; height: 100%; border-radius: 16px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: .5rem;
+      position: relative; overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.1);
+    }
+    .pack-face::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.18) 0%, transparent 50%, rgba(0,0,0,.2) 100%);
+    }
+    .pack-face .pack-emoji { font-size: 4rem; z-index: 1; }
+    .pack-face .pack-face-name { font-family: var(--font-h); font-size: 1.4rem; letter-spacing: .15em; z-index: 1; }
+    .pack-face .pack-face-sub { font-size: .72rem; letter-spacing: .14em; color: rgba(255,255,255,.6); z-index: 1; text-transform: uppercase; }
+    .pack-face .pack-shine {
+      position: absolute; inset: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,.15) 50%, transparent 70%);
+      background-size: 200% 200%;
+      animation: packShine 2s linear infinite;
+    }
+    @keyframes packShine {
+      0%   { background-position: -100% -100%; }
+      100% { background-position: 200% 200%; }
+    }
+
+    .pack-gold   { background: linear-gradient(160deg, #c8922a, #6b3d00, #e8c84a); }
+    .pack-icon   { background: linear-gradient(160deg, #8822dd, #440088, #cc88ff); }
+    .pack-toty   { background: linear-gradient(160deg, #0044ff, #001188, #4488ff); }
+    .pack-inform { background: linear-gradient(160deg, #1a9950, #0a5530, #4dcc88); }
+
+    .pack-hint {
+      font-size: .82rem; color: var(--muted);
+      letter-spacing: .1em; text-transform: uppercase;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+    /* ── Screen 3: Cards Reveal ── */
+    .reveal-title { font-family: var(--font-h); font-size: clamp(1.8rem, 5vw, 3rem); letter-spacing: .12em; text-align: center; }
+    .reveal-title span { color: var(--gold2); }
+    .cards-reveal-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.2rem; }
+
+    .pack-card {
+      width: 160px; height: 224px; border-radius: 14px;
+      position: relative; overflow: hidden; cursor: pointer;
+      box-shadow: 0 16px 48px rgba(0,0,0,.8);
+      transform: rotateY(180deg) scale(.8); opacity: 0;
+      transition: transform .6s cubic-bezier(.23,1,.32,1), opacity .4s, box-shadow .3s;
+      transform-style: preserve-3d;
+    }
+    .pack-card.flipped { transform: rotateY(0deg) scale(1); opacity: 1; }
+    .pack-card:hover { transform: rotateY(0deg) scale(1.08) translateY(-6px); box-shadow: 0 28px 64px rgba(0,0,0,.9), 0 0 30px rgba(212,168,67,.3); }
+
+    .pack-card .card-bg { position: absolute; inset: 0; z-index: 0; }
+    .pack-card .card-shine-overlay {
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(135deg, rgba(255,255,255,.2) 0%, transparent 45%, rgba(0,0,0,.12) 100%);
+    }
+    .pack-card .card-inner {
+      position: relative; z-index: 2; height: 100%;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 10px 0 6px;
+    }
+    .pack-card .c-top { align-self: flex-start; padding-left: 10px; margin-bottom: 2px; }
+    .pack-card .c-rating { font-family: var(--font-h); font-size: 1.8rem; line-height: 1; color: rgba(0,0,0,.75); }
+    .pack-card .c-pos { font-family: var(--font-h); font-size: .8rem; color: rgba(0,0,0,.6); }
+    .pack-card .c-flag { font-size: .95rem; }
+    .pack-card .c-photo { font-size: 3.8rem; line-height: 1; margin: 2px 0; filter: drop-shadow(0 4px 8px rgba(0,0,0,.4)); }
+    .pack-card .c-name { font-family: var(--font-h); font-size: 1rem; letter-spacing: .1em; color: rgba(0,0,0,.8); text-shadow: 0 1px 0 rgba(255,255,255,.25); }
+    .pack-card .c-divider { width: calc(100% - 20px); height: 1px; background: rgba(0,0,0,.2); margin: 4px 0; }
+    .pack-card .c-stats { display: flex; justify-content: space-around; width: 100%; padding: 0 6px; }
+    .pack-card .c-stat { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+    .pack-card .c-sv { font-family: var(--font-h); font-size: .82rem; color: rgba(0,0,0,.8); line-height: 1; }
+    .pack-card .c-sk { font-size: .44rem; font-weight: 700; color: rgba(0,0,0,.5); letter-spacing: .05em; font-family: var(--font-b); }
+    .pack-card .c-club { font-family: var(--font-b); font-size: .55rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(0,0,0,.45); margin-top: 2px; }
+
+    .pack-card.special::after {
+      content: ''; position: absolute; inset: -2px; z-index: -1;
+      border-radius: 16px;
+      background: linear-gradient(45deg, #d4a843, #ff44ff, #00d4ff, #d4a843);
+      background-size: 300% 300%;
+      animation: rainbowBorder 2s linear infinite;
+    }
+    @keyframes rainbowBorder {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .btn-primary {
+      font-family: var(--font-h); font-size: 1.1rem; letter-spacing: .12em;
+      padding: .8rem 2.5rem;
+      background: linear-gradient(135deg, var(--gold3), var(--gold1), var(--gold2));
+      border: none; border-radius: 12px; color: #1a0e00; cursor: pointer;
+      transition: all .25s; position: relative; overflow: hidden;
+    }
+    .btn-primary::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+      transform: translateX(-100%); transition: transform .5s;
+    }
+    .btn-primary:hover::after { transform: translateX(100%); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(212,168,67,.4); }
+
+    .btn-secondary {
+      font-family: var(--font-b); font-weight: 700; font-size: .95rem; letter-spacing: .1em;
+      padding: .7rem 2rem;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 12px; color: var(--text); cursor: pointer; transition: all .2s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); background: rgba(0,212,255,.08); }
+    .btn-row { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+
+    .confetti-piece {
+      position: fixed; width: 8px; height: 12px; border-radius: 2px;
+      z-index: 200; pointer-events: none;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    @media (max-width: 600px) {
+      .pack-selection { gap: .8rem; }
+      .pack-choice { width: 130px; padding: 1rem .7rem; }
+      .pack-object { width: 180px; height: 250px; }
+      .pack-card { width: 130px; height: 182px; }
+      .pack-card .c-rating { font-size: 1.5rem; }
+      .pack-card .c-photo  { font-size: 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="bg-grid"></div>
+<canvas id="sparks"></canvas>
+
+<nav>
+  <div class="nav-logo">
+    <span>PRO</span><span style="color:#fff">KIT</span><span>CARDS</span>
+  </div>
+  <a href="index.html" class="nav-back">← Back to Editor</a>
+</nav>
+
+<div class="stage">
+
+  <!-- SCREEN 1: Choose Pack -->
+  <div class="screen active" id="screenChoose">
+    <h1 class="choose-title">Open a <span>Pack</span></h1>
+    <p class="choose-sub">Choose your pack — luck decides the rest</p>
+    <div class="pack-selection">
+      <div class="pack-choice gold" onclick="choosePack('gold')">
+        <div class="pack-icon">📦</div>
+        <div class="pack-name">Gold Pack</div>
+        <div class="pack-desc">Rare gold players</div>
+        <div class="pack-cards-count">5 CARDS</div>
+      </div>
+      <div class="pack-choice icon" onclick="choosePack('icon')">
+        <div class="pack-icon">💎</div>
+        <div class="pack-name">Icon Pack</div>
+        <div class="pack-desc">Legendary icons only</div>
+        <div class="pack-cards-count">3 CARDS</div>
+      </div>
+      <div class="pack-choice toty" onclick="choosePack('toty')">
+        <div class="pack-icon">👑</div>
+        <div class="pack-name">TOTY Pack</div>
+        <div class="pack-desc">Team of the Year</div>
+        <div class="pack-cards-count">4 CARDS</div>
+      </div>
+      <div class="pack-choice inform" onclick="choosePack('inform')">
+        <div class="pack-icon">🔥</div>
+        <div class="pack-name">In Form</div>
+        <div class="pack-desc">Hot weekly picks</div>
+        <div class="pack-cards-count">5 CARDS</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Open Pack -->
+  <div class="screen" id="screenOpen">
+    <p class="pack-title-small" id="packLabel">Gold Pack</p>
+    <div class="pack-stage">
+      <div class="pack-wrap" onclick="openPack()">
+        <div class="pack-object" id="packObject">
+          <div class="pack-face" id="packFace">
+            <div class="pack-shine"></div>
+            <div class="pack-emoji" id="packEmoji">📦</div>
+            <div class="pack-face-name" id="packFaceName">GOLD</div>
+            <div class="pack-face-sub">PACK</div>
+          </div>
+        </div>
+      </div>
+      <p class="pack-hint" id="packHint">Tap to open</p>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: Cards Reveal -->
+  <div class="screen" id="screenReveal">
+    <h2 class="reveal-title">You got <span id="revealCount">5</span> cards!</h2>
+    <div class="cards-reveal-grid" id="cardsGrid"></div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="openAgain()">🎁 Open Another</button>
+      <button class="btn-secondary" onclick="goChoose()">← Choose Pack</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const PLAYERS = {
+  gold: [
+    { name:'SALAH',    flag:'🇪🇬', pos:'RW',  rat:91, pac:94,sho:90,pas:81,dri:93,def:45,phy:74, club:'Liverpool',   emoji:'⚡' },
+    { name:'BENZEMA',  flag:'🇫🇷', pos:'CF',  rat:91, pac:76,sho:93,pas:83,dri:91,def:38,phy:80, club:'Al-Ittihad',  emoji:'🔥' },
+    { name:'LEWANDOW', flag:'🇵🇱', pos:'ST',  rat:91, pac:78,sho:95,pas:79,dri:86,def:44,phy:82, club:'Barcelona',   emoji:'💪' },
+    { name:'ALISSON',  flag:'🇧🇷', pos:'GK',  rat:90, pac:60,sho:15,pas:72,dri:40,def:14,phy:67, club:'Liverpool',   emoji:'🧤' },
+    { name:'KANTE',    flag:'🇫🇷', pos:'CDM', rat:89, pac:82,sho:66,pas:75,dri:84,def:91,phy:83, club:'Al-Ittihad',  emoji:'🛡️' },
+    { name:'LUKAKU',   flag:'🇧🇪', pos:'ST',  rat:88, pac:85,sho:88,pas:69,dri:82,def:38,phy:91, club:'Roma',        emoji:'💥' },
+    { name:'FIRMINO',  flag:'🇧🇷', pos:'CF',  rat:87, pac:78,sho:84,pas:83,dri:87,def:49,phy:76, club:'Al-Ahli',     emoji:'🎯' },
+    { name:'MARTIAL',  flag:'🇫🇷', pos:'LW',  rat:85, pac:90,sho:83,pas:74,dri:88,def:30,phy:72, club:'Fenerbahçe',  emoji:'🌪️' },
+  ],
+  icon: [
+    { name:'RONALDO',  flag:'🇵🇹', pos:'ST',  rat:99, pac:91,sho:99,pas:80,dri:96,def:35,phy:88, club:'Icon', emoji:'🐐' },
+    { name:'MESSI',    flag:'🇦🇷', pos:'CAM', rat:99, pac:86,sho:96,pas:98,dri:99,def:36,phy:68, club:'Icon', emoji:'🌟' },
+    { name:'RONALDO9', flag:'🇧🇷', pos:'ST',  rat:99, pac:96,sho:98,pas:77,dri:97,def:32,phy:88, club:'Icon', emoji:'👑' },
+    { name:'ZIDANE',   flag:'🇫🇷', pos:'CAM', rat:98, pac:76,sho:87,pas:97,dri:98,def:66,phy:79, club:'Icon', emoji:'💫' },
+    { name:'PELE',     flag:'🇧🇷', pos:'ST',  rat:98, pac:92,sho:98,pas:87,dri:99,def:43,phy:78, club:'Icon', emoji:'⚽' },
+    { name:'MARADONA', flag:'🇦🇷', pos:'CAM', rat:98, pac:88,sho:90,pas:92,dri:99,def:52,phy:69, club:'Icon', emoji:'🏆' },
+  ],
+  toty: [
+    { name:'MBAPPE',    flag:'🇫🇷', pos:'ST',  rat:96, pac:99,sho:94,pas:82,dri:97,def:38,phy:81, club:'Real Madrid', emoji:'⚡' },
+    { name:'HAALAND',   flag:'🇳🇴', pos:'ST',  rat:95, pac:89,sho:97,pas:66,dri:86,def:45,phy:95, club:'Man City',    emoji:'🔥' },
+    { name:'VINICIUS',  flag:'🇧🇷', pos:'LW',  rat:94, pac:97,sho:85,pas:78,dri:96,def:30,phy:72, club:'Real Madrid', emoji:'🌪️' },
+    { name:'BELLINGHAM',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',pos:'CM', rat:94, pac:82,sho:87,pas:88,dri:92,def:74,phy:86, club:'Real Madrid', emoji:'💥' },
+    { name:'DE BRUYNE', flag:'🇧🇪', pos:'CM',  rat:95, pac:78,sho:88,pas:98,dri:91,def:64,phy:77, club:'Man City',    emoji:'🎯' },
+    { name:'COURTOIS',  flag:'🇧🇪', pos:'GK',  rat:92, pac:62,sho:12,pas:75,dri:42,def:16,phy:88, club:'Real Madrid', emoji:'🧤' },
+  ],
+  inform: [
+    { name:'OSIMHEN', flag:'🇳🇬', pos:'ST',  rat:91, pac:94,sho:89,pas:67,dri:86,def:40,phy:87, club:'Galatasaray', emoji:'💨' },
+    { name:'SAKA',    flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',pos:'RW',  rat:88, pac:91,sho:83,pas:82,dri:90,def:52,phy:68, club:'Arsenal',     emoji:'⚡' },
+    { name:'PEDRI',   flag:'🇪🇸', pos:'CM',  rat:88, pac:77,sho:78,pas:91,dri:93,def:68,phy:66, club:'Barcelona',   emoji:'🎭' },
+    { name:'VALVERDE',flag:'🇺🇾', pos:'CM',  rat:88, pac:86,sho:82,pas:84,dri:88,def:81,phy:87, club:'Real Madrid', emoji:'⚙️' },
+    { name:'DIAZ',    flag:'🇨🇴', pos:'LW',  rat:87, pac:92,sho:82,pas:75,dri:89,def:42,phy:72, club:'Liverpool',   emoji:'🌶️' },
+    { name:'GAKPO',   flag:'🇳🇱', pos:'LW',  rat:86, pac:88,sho:84,pas:77,dri:86,def:38,phy:76, club:'Liverpool',   emoji:'🎯' },
+  ],
+};
+
+const PACK_CONFIG = {
+  gold:   { label:'Gold Pack',    emoji:'📦', faceClass:'pack-gold',   cardColors:['#d4a843','#7a4f00','#f5d978'], count:5 },
+  icon:   { label:'Icon Pack',    emoji:'💎', faceClass:'pack-icon',   cardColors:['#b44aff','#6600cc','#e0aaff'], count:3 },
+  toty:   { label:'TOTY Pack',    emoji:'👑', faceClass:'pack-toty',   cardColors:['#1a1aff','#0000aa','#7ab4ff'], count:4 },
+  inform: { label:'In Form Pack', emoji:'🔥', faceClass:'pack-inform', cardColors:['#2ecc71','#1a7a44','#a8f0c8'], count:5 },
+};
+
+let currentPack = 'gold';
+let clickCount  = 0;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function choosePack(type) {
+  currentPack = type;
+  clickCount  = 0;
+  const cfg = PACK_CONFIG[type];
+
+  document.getElementById('packLabel').textContent    = cfg.label;
+  document.getElementById('packEmoji').textContent    = cfg.emoji;
+  document.getElementById('packFaceName').textContent = type.toUpperCase();
+  document.getElementById('packHint').textContent     = 'Tap to open';
+
+  const face = document.getElementById('packFace');
+  face.className = 'pack-face ' + cfg.faceClass;
+
+  const obj = document.getElementById('packObject');
+  obj.className = 'pack-object';
+  obj.style.animation = '';
+  void obj.offsetWidth;
+  obj.style.animation = 'packFloat 3s ease-in-out infinite';
+
+  showScreen('screenOpen');
+}
+
+function openPack() {
+  clickCount++;
+  const obj  = document.getElementById('packObject');
+  const hint = document.getElementById('packHint');
+
+  if (clickCount === 1) {
+    obj.style.animation = 'none';
+    void obj.offsetWidth;
+    obj.classList.add('shake');
+    hint.textContent = 'Tap again!';
+    sparksAt(window.innerWidth/2, window.innerHeight/2, 8);
+    setTimeout(() => { obj.classList.remove('shake'); obj.style.animation = 'packFloat 3s ease-in-out infinite'; }, 500);
+  } else if (clickCount === 2) {
+    obj.style.animation = 'none';
+    void obj.offsetWidth;
+    obj.classList.add('shake');
+    hint.textContent = 'One more!';
+    sparksAt(window.innerWidth/2, window.innerHeight/2, 16);
+    setTimeout(() => { obj.classList.remove('shake'); obj.style.animation = 'packFloat 3s ease-in-out infinite'; }, 500);
+  } else {
+    obj.style.animation = 'none';
+    void obj.offsetWidth;
+    obj.classList.add('open');
+    hint.textContent = '';
+    sparksAt(window.innerWidth/2, window.innerHeight/2, 40);
+    setTimeout(() => revealCards(), 700);
+  }
+}
+
+function revealCards() {
+  const cfg  = PACK_CONFIG[currentPack];
+  const pool = PLAYERS[currentPack];
+  const [c1,c2,c3] = cfg.cardColors;
+  const grid = document.getElementById('cardsGrid');
+
+  document.getElementById('revealCount').textContent = cfg.count;
+  grid.innerHTML = '';
+
+  const shuffled = [...pool].sort(() => Math.random() - .5);
+  const picked   = shuffled.slice(0, Math.min(cfg.count, shuffled.length));
+  while (picked.length < cfg.count) picked.push(pool[Math.floor(Math.random()*pool.length)]);
+
+  picked.forEach((p, i) => {
+    const isSpecial = p.rat >= 95;
+    const card = document.createElement('div');
+    card.className = 'pack-card' + (isSpecial ? ' special' : '');
+    card.innerHTML = `
+      <div class="card-bg" style="background:linear-gradient(160deg,${c1} 0%,${c2} 55%,${c3} 100%)"></div>
+      <div class="card-shine-overlay"></div>
+      <div class="card-inner">
+        <div class="c-top">
+          <div class="c-rating">${p.rat}</div>
+          <div class="c-pos">${p.pos}</div>
+          <div class="c-flag">${p.flag}</div>
+        </div>
+        <div class="c-photo">${p.emoji}</div>
+        <div class="c-name">${p.name}</div>
+        <div class="c-divider"></div>
+        <div class="c-stats">
+          <div class="c-stat"><span class="c-sv">${p.pac}</span><span class="c-sk">PAC</span></div>
+          <div class="c-stat"><span class="c-sv">${p.sho}</span><span class="c-sk">SHO</span></div>
+          <div class="c-stat"><span class="c-sv">${p.pas}</span><span class="c-sk">PAS</span></div>
+          <div class="c-stat"><span class="c-sv">${p.dri}</span><span class="c-sk">DRI</span></div>
+          <div class="c-stat"><span class="c-sv">${p.def}</span><span class="c-sk">DEF</span></div>
+          <div class="c-stat"><span class="c-sv">${p.phy}</span><span class="c-sk">PHY</span></div>
+        </div>
+        <div class="c-club">${p.club}</div>
+      </div>
+    `;
+    grid.appendChild(card);
+
+    setTimeout(() => {
+      card.classList.add('flipped');
+      sparksAt(
+        card.getBoundingClientRect().left + 80,
+        card.getBoundingClientRect().top  + 112,
+        isSpecial ? 20 : 6
+      );
+      if (isSpecial) confettiBurst();
+    }, 200 + i * 250);
+  });
+
+  showScreen('screenReveal');
+}
+
+function openAgain() { choosePack(currentPack); }
+function goChoose()  { showScreen('screenChoose'); }
+
+// Sparks
+const canvas = document.getElementById('sparks');
+const ctx    = canvas.getContext('2d');
+let sparksArr = [];
+
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function sparksAt(x, y, count) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 6 + 2;
+    sparksArr.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 1,
+      decay: Math.random() * .02 + .015,
+      size: Math.random() * 3 + 1,
+      color: ['#d4a843','#f5e07a','#00d4ff','#ffffff','#ff4aff'][Math.floor(Math.random()*5)],
+    });
+  }
+}
+
+function animateSparks() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  sparksArr = sparksArr.filter(s => s.life > 0);
+  sparksArr.forEach(s => {
+    s.x += s.vx; s.y += s.vy; s.vy += .15; s.life -= s.decay;
+    ctx.globalAlpha = Math.max(0, s.life);
+    ctx.fillStyle   = s.color;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animateSparks);
+}
+animateSparks();
+
+function confettiBurst() {
+  const colors = ['#d4a843','#f5e07a','#00d4ff','#ff4aff','#4aff91','#ff4444','#ffffff'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left: ${Math.random()*100}vw; top: -20px;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      transform: rotate(${Math.random()*360}deg);
+      animation-duration: ${Math.random()*2+1.5}s;
+      animation-delay: ${Math.random()*.5}s;
+      width: ${Math.random()*8+4}px;
+      height: ${Math.random()*12+6}px;
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+}
+</script>
+</body>
+</html>
