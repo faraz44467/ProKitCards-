@@ -138,6 +138,24 @@ body {
   border-radius: 50px;
   padding: .3rem;
 }
+.pack-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+  padding: .65rem 1.2rem;
+  border-radius: 50px;
+  background: linear-gradient(135deg, var(--accent), var(--gold2));
+  color: #000;
+  font-family: var(--font-b);
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform .2s, opacity .2s;
+}
+.pack-link:hover {
+  transform: translateY(-2px);
+  opacity: .95;
+}
 .mode-btn {
   padding: .5rem 1.3rem;
   border-radius: 50px;
