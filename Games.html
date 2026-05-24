@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProKitCards — Games</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #04060f; --gold1: #d4a843; --gold2: #f5e07a; --gold3: #7a4f00;
+      --accent: #00d4ff; --text: #e8eaf6; --muted: #556070;
+      --green: #2ecc71; --purple: #b44aff; --red: #ff4060;
+      --font-h: 'Bebas Neue', sans-serif;
+      --font-b: 'Rajdhani', sans-serif;
+      --font-o: 'Orbitron', sans-serif;
+    }
+    html, body { min-height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-b); overflow-x: hidden; }
+    .bg-wrap { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .bg-grid { position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(0,212,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,.025) 1px, transparent 1px);
+      background-size: 48px 48px; animation: gridDrift 25s linear infinite; }
+    @keyframes gridDrift { to { background-position: 48px 48px; } }
+    .bg-orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .12; animation: orbFloat 9s ease-in-out infinite; }
+    .orb1 { width:500px; height:500px; background:#00d4ff; top:-100px; left:-100px; animation-delay:0s; }
+    .orb2 { width:400px; height:400px; background:#b44aff; bottom:-80px; right:-80px; animation-delay:-4s; }
+    .orb3 { width:300px; height:300px; background:#d4a843; top:50%; left:40%; animation-delay:-7s; }
+    @keyframes orbFloat { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-28px) scale(1.06)} }
+    nav { position: relative; z-index: 100; display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem; border-bottom: 1px solid rgba(255,255,255,.06);
+      background: rgba(4,6,15,.88); backdrop-filter: blur(18px); }
+    .nav-logo { font-family: var(--font-h); font-size: 1.6rem; letter-spacing: .1em; }
+    .nav-logo .p { color: var(--accent); } .nav-logo .c { color: transparent; -webkit-text-stroke: 1px var(--gold1); }
+    .nav-links { display: flex; gap: .7rem; }
+    .nav-link { font-family: var(--font-b); font-weight: 700; font-size: .85rem; letter-spacing: .08em;
+      color: var(--muted); text-decoration: none; border: 1px solid rgba(255,255,255,.08);
+      padding: .35rem .9rem; border-radius: 8px; transition: all .2s; }
+    .nav-link:hover, .nav-link.active { color: var(--text); border-color: var(--accent); background: rgba(0,212,255,.08); }
+    .page { position: relative; z-index: 10; max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+    .page-title { font-family: var(--font-h); font-size: clamp(2rem,6vw,3.5rem); letter-spacing: .12em; text-align: center; margin-bottom: .4rem; }
+    .page-title span { color: var(--gold2); }
+    .page-sub { text-align: center; color: var(--muted); letter-spacing: .1em; font-size: .9rem; text-transform: uppercase; margin-bottom: 3rem; }
+    .section { margin-bottom: 4rem; }
+    .section-title { font-family: var(--font-h); font-size: 1.8rem; letter-spacing: .12em; margin-bottom: .3rem; }
+    .section-desc { color: var(--muted); font-size: .9rem; margin-bottom: 1.5rem; }
+    .glass { background: rgba(255,255,255,.04); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.08); border-radius: 20px; }
+    .wheel-wrap { display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 2.5rem; }
+    .wheel-area { position: relative; display: flex; align-items: center; justify-content: center; }
+    .wheel-pointer { position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+      width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent;
+      border-top: 28px solid var(--gold2); filter: drop-shadow(0 4px 12px rgba(245,224,122,.6)); z-index: 10; }
+    canvas#wheelCanvas { border-radius: 50%; box-shadow: 0 0 0 6px rgba(255,255,255,.06), 0 24px 64px rgba(0,0,0,.8); }
+    .wheel-center { position: absolute; width: 60px; height: 60px; border-radius: 50%;
+      background: radial-gradient(circle, #1a1a2e, #04060f); border: 3px solid var(--gold1);
+      box-shadow: 0 0 20px rgba(212,168,67,.4); display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-h); font-size: .7rem; letter-spacing: .1em; color: var(--gold2); }
+    .spin-btn { font-family: var(--font-h); font-size: 1.4rem; letter-spacing: .15em; padding: .9rem 3rem;
+      background: linear-gradient(135deg, var(--gold3), var(--gold1), var(--gold2));
+      border: none; border-radius: 14px; color: #1a0e00; cursor: pointer;
+      transition: all .25s; position: relative; overflow: hidden; box-shadow: 0 8px 30px rgba(212,168,67,.3); }
+    .spin-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .spin-btn::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent); transform:translateX(-100%); transition:transform .5s; }
+    .spin-btn:hover:not(:disabled)::after { transform:translateX(100%); }
+    .spin-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 40px rgba(212,168,67,.5); }
+    .wheel-result { font-family: var(--font-h); font-size: 1.6rem; letter-spacing: .15em; text-align: center; min-height: 2.5rem; }
+    .wheel-result.show { animation: resultPop .4s cubic-bezier(.23,1,.32,1); }
+    @keyframes resultPop { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+    .wheel-result .go-btn { font-family:var(--font-b); font-size:1rem; font-weight:700; letter-spacing:.1em;
+      background:rgba(0,212,255,.15); border:1px solid var(--accent); color:var(--accent);
+      padding:.4rem 1.2rem; border-radius:8px; cursor:pointer; margin-left:.8rem;
+      transition:all .2s; text-decoration:none; display:inline-block; }
+    .wheel-result .go-btn:hover { background:rgba(0,212,255,.3); }
+
+    .fifa-card { width:200px; height:280px; border-radius:16px; position:relative; overflow:hidden;
+      cursor:pointer; box-shadow:0 20px 56px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.08);
+      transition:transform .35s cubic-bezier(.23,1,.32,1),box-shadow .35s; animation:cardIn .5s cubic-bezier(.23,1,.32,1) both; }
+    @keyframes cardIn { from{transform:scale(.8) rotateY(-20deg);opacity:0} to{transform:scale(1) rotateY(0);opacity:1} }
+    .fifa-card:hover { transform:scale(1.06) rotate(-1.5deg); box-shadow:0 30px 70px rgba(0,0,0,.9),0 0 40px rgba(212,168,67,.2); }
+    .fifa-card .holo { position:absolute; inset:0; z-index:5; opacity:0; pointer-events:none;
+      background:linear-gradient(105deg,transparent 20%,rgba(255,0,128,.15) 30%,rgba(255,255,0,.15) 40%,rgba(0,255,128,.15) 50%,rgba(0,128,255,.15) 60%,rgba(128,0,255,.15) 70%,transparent 80%);
+      background-size:200% 200%; mix-blend-mode:overlay; transition:opacity .3s; }
+    .fifa-card:hover .holo { opacity:1; animation:holoShift 1.5s linear infinite; }
+    @keyframes holoShift { 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
+    .card-bg { position:absolute; inset:0; z-index:0; }
+    .card-shine { position:absolute; inset:0; z-index:1; background:linear-gradient(135deg,rgba(255,255,255,.2) 0%,transparent 45%,rgba(0,0,0,.12) 100%); pointer-events:none; }
+    .card-inner { position:relative; z-index:2; height:100%; display:flex; flex-direction:column; align-items:center; padding:12px 0 8px; }
+    .c-top { align-self:flex-start; padding-left:12px; margin-bottom:2px; }
+    .c-rating { font-family:var(--font-h); font-size:2rem; line-height:1; color:rgba(0,0,0,.75); }
+    .c-pos { font-family:var(--font-h); font-size:.85rem; color:rgba(0,0,0,.6); }
+    .c-flag { font-size:1.1rem; }
+    .c-photo { font-size:4.5rem; line-height:1; margin:4px 0; filter:drop-shadow(0 4px 8px rgba(0,0,0,.4)); }
+    .c-name { font-family:var(--font-h); font-size:1.1rem; letter-spacing:.12em; color:rgba(0,0,0,.8); text-shadow:0 1px 0 rgba(255,255,255,.25); }
+    .c-divider { width:calc(100% - 24px); height:1px; background:rgba(0,0,0,.2); margin:5px 0; }
+    .c-stats { display:flex; justify-content:space-around; width:100%; padding:0 8px; }
+    .c-stat { display:flex; flex-direction:column; align-items:center; gap:1px; }
+    .c-sv { font-family:var(--font-h); font-size:.9rem; color:rgba(0,0,0,.8); line-height:1; }
+    .c-sk { font-size:.48rem; font-weight:700; color:rgba(0,0,0,.5); letter-spacing:.05em; font-family:var(--font-b); }
+    .c-club { font-family:var(--font-b); font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:rgba(0,0,0,.45); margin-top:3px; }
+
+    .random-wrap { display:grid; grid-template-columns:1fr 1fr; gap:2rem; padding:2rem; align-items:start; }
+    .random-controls { display:flex; flex-direction:column; gap:1rem; }
+    .random-info { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:1.2rem; }
+    .random-info h4 { font-family:var(--font-h); font-size:1rem; letter-spacing:.1em; color:var(--accent); margin-bottom:.5rem; }
+    .random-info p { font-size:.85rem; color:var(--muted); line-height:1.5; }
+    .random-btn { font-family:var(--font-h); font-size:1.2rem; letter-spacing:.12em; padding:1rem;
+      background:linear-gradient(135deg,#6600cc,var(--purple),#e0aaff); border:none; border-radius:12px;
+      color:#fff; cursor:pointer; transition:all .25s; position:relative; overflow:hidden; }
+    .random-btn::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent); transform:translateX(-100%); transition:transform .5s; }
+    .random-btn:hover::after { transform:translateX(100%); }
+    .random-btn:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(180,74,255,.4); }
+    .random-card-wrap { display:flex; justify-content:center; }
+    .share-row { display:flex; gap:.6rem; justify-content:center; flex-wrap:wrap; }
+    .share-btn { font-family:var(--font-b); font-weight:700; font-size:.85rem; letter-spacing:.08em;
+      padding:.5rem 1.1rem; border-radius:8px; border:none; cursor:pointer; transition:all .2s;
+      display:flex; align-items:center; gap:.4em; text-decoration:none; }
+    .share-wa { background:#25D366; color:#fff; }
+    .share-tw { background:#1DA1F2; color:#fff; }
+    .share-cp { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); color:var(--text); }
+    .share-btn:hover { transform:translateY(-2px); filter:brightness(1.15); }
+    .copied-msg { font-size:.8rem; color:var(--green); letter-spacing:.1em; display:none; }
+    .copied-msg.show { display:block; animation:fadeIn .3s ease; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .score-display { font-family:var(--font-o); font-size:.9rem; letter-spacing:.1em; color:var(--gold1);
+      background:rgba(212,168,67,.08); border:1px solid rgba(212,168,67,.2); border-radius:10px; padding:.5rem 1.2rem; text-align:center; }
+
+    .guess-wrap { padding:2rem; display:flex; flex-direction:column; align-items:center; gap:1.5rem; }
+    .guess-card-area { display:flex; gap:2.5rem; align-items:flex-start; flex-wrap:wrap; justify-content:center; }
+    .guess-card-container { position:relative; }
+    .name-blur { filter:blur(12px) brightness(.5) !important; transition:filter .4s; }
+    .reveal-overlay { position:absolute; bottom:30px; left:50%; transform:translateX(-50%);
+      background:rgba(0,0,0,.7); border:1px solid rgba(255,255,255,.15); border-radius:8px; padding:.3rem .8rem;
+      font-family:var(--font-h); font-size:.8rem; letter-spacing:.12em; color:rgba(255,255,255,.5); white-space:nowrap; pointer-events:none; }
+    .guess-panel { display:flex; flex-direction:column; gap:1rem; min-width:260px; max-width:340px; }
+    .guess-stats-hint { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:1rem; }
+    .guess-stats-hint h4 { font-family:var(--font-h); font-size:1rem; letter-spacing:.1em; color:var(--accent); margin-bottom:.7rem; }
+    .hint-stat-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:.4rem; }
+    .hint-stat-label { font-size:.8rem; color:var(--muted); font-weight:700; letter-spacing:.08em; }
+    .hint-stat-bar { flex:1; height:6px; background:rgba(255,255,255,.08); border-radius:3px; margin:0 .8rem; overflow:hidden; }
+    .hint-stat-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--gold1),var(--gold2)); }
+    .hint-stat-val { font-family:var(--font-h); font-size:.95rem; color:var(--gold2); width:24px; text-align:right; }
+    .guess-input-row { display:flex; gap:.6rem; }
+    .guess-input { flex:1; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
+      border-radius:10px; color:var(--text); font-family:var(--font-b); font-size:1rem; font-weight:600;
+      padding:.6rem .9rem; outline:none; transition:border-color .2s; }
+    .guess-input:focus { border-color:var(--accent); }
+    .guess-submit { font-family:var(--font-h); font-size:1rem; letter-spacing:.1em; padding:.6rem 1.2rem;
+      background:linear-gradient(135deg,var(--gold3),var(--gold1)); border:none; border-radius:10px;
+      color:#1a0e00; cursor:pointer; transition:all .2s; white-space:nowrap; }
+    .guess-submit:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(212,168,67,.3); }
+    .guess-feedback { font-family:var(--font-h); font-size:1.2rem; letter-spacing:.12em; text-align:center; min-height:2rem; }
+    .guess-feedback.correct { color:var(--green); animation:resultPop .4s both; }
+    .guess-feedback.wrong   { color:var(--red); animation:shake .4s both; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+    .guess-hints-used { font-size:.8rem; color:var(--muted); letter-spacing:.08em; text-align:center; }
+    .hint-btn { font-family:var(--font-b); font-weight:700; font-size:.85rem; letter-spacing:.1em;
+      padding:.5rem 1.1rem; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+      border-radius:8px; color:var(--muted); cursor:pointer; transition:all .2s; }
+    .hint-btn:hover { border-color:var(--gold1); color:var(--gold1); }
+    .next-btn { font-family:var(--font-h); font-size:1rem; letter-spacing:.12em; padding:.65rem 2rem;
+      background:rgba(0,212,255,.12); border:1px solid var(--accent); border-radius:10px; color:var(--accent); cursor:pointer; transition:all .2s; }
+    .next-btn:hover { background:rgba(0,212,255,.25); }
+    .btn-row { display:flex; gap:.8rem; flex-wrap:wrap; justify-content:center; }
+
+    @media(max-width:720px) {
+      .random-wrap { grid-template-columns:1fr; }
+      .guess-card-area { flex-direction:column; align-items:center; }
+      .nav-links { gap:.4rem; }
+      .nav-link { font-size:.75rem; padding:.3rem .6rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="bg-wrap">
+  <div class="bg-grid"></div>
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+</div>
+
+<nav>
+  <div class="nav-logo"><span class="p">PRO</span><span>KIT</span><span class="c">CARDS</span></div>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">🃏 Editor</a>
+    <a href="pack.html"  class="nav-link">📦 Packs</a>
+    <a href="games.html" class="nav-link active">🎮 Games</a>
+  </div>
+</nav>
+
+<div class="page">
+  <h1 class="page-title">🎮 <span>Games</span> & Fun</h1>
+  <p class="page-sub">Spin • Guess • Generate • Share</p>
+
+  <!-- SPIN THE WHEEL -->
+  <div class="section">
+    <div class="section-title">🎰 Spin the Wheel</div>
+    <p class="section-desc">Spin to randomly pick your pack type — then open it!</p>
+    <div class="glass">
+      <div class="wheel-wrap">
+        <div class="wheel-area">
+          <div class="wheel-pointer"></div>
+          <canvas id="wheelCanvas" width="280" height="280"></canvas>
+          <div class="wheel-center">SPIN</div>
+        </div>
+        <button class="spin-btn" id="spinBtn" onclick="spinWheel()">🎰 SPIN!</button>
+        <div class="wheel-result" id="wheelResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RANDOM GENERATOR + SHARE -->
+  <div class="section">
+    <div class="section-title">🎲 Random Idol Generator</div>
+    <p class="section-desc">Generate a random legendary player card instantly — then share it!</p>
+    <div class="glass">
+      <div class="random-wrap">
+        <div class="random-controls">
+          <div class="random-info">
+            <h4>⚡ How it works</h4>
+            <p>Click Generate to create a random player card from our pool of legends. Every click gives you a different player, rating, position and stats. Share your favourite on WhatsApp or Twitter!</p>
+          </div>
+          <button class="random-btn" onclick="generateRandom()">🎲 Generate Random Idol</button>
+          <div class="share-row" id="shareRow" style="display:none">
+            <button class="share-btn share-wa" onclick="shareWhatsApp()">💬 WhatsApp</button>
+            <button class="share-btn share-tw" onclick="shareTwitter()">🐦 Twitter</button>
+            <button class="share-btn share-cp" onclick="copyLink()">🔗 Copy Link</button>
+          </div>
+          <div class="copied-msg" id="copiedMsg">✅ Link copied to clipboard!</div>
+          <div class="score-display" id="randomInfo" style="display:none"></div>
+        </div>
+        <div class="random-card-wrap">
+          <div id="randomCardSlot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUESS THE PLAYER -->
+  <div class="section">
+    <div class="section-title">🤔 Guess the Player</div>
+    <p class="section-desc">Stats are shown — name is hidden. Can you guess who it is?</p>
+    <div class="glass">
+      <div class="guess-wrap">
+        <div class="score-display" id="scoreDisplay">🏆 Score: <span id="scoreNum">0</span> &nbsp;|&nbsp; ❌ Wrong: <span id="wrongNum">0</span></div>
+        <div class="guess-card-area">
+          <div class="guess-card-container">
+            <div id="guessCardSlot"></div>
+            <div class="reveal-overlay" id="revealOverlay">❓ Who is this?</div>
+          </div>
+          <div class="guess-panel">
+            <div class="guess-stats-hint" id="statsHint"></div>
+            <div class="guess-input-row">
+              <input type="text" class="guess-input" id="guessInput" placeholder="Type player name..." onkeydown="if(event.key==='Enter') submitGuess()"/>
+              <button class="guess-submit" onclick="submitGuess()">GUESS</button>
+            </div>
+            <div class="guess-feedback" id="guessFeedback"></div>
+            <div class="guess-hints-used" id="hintsUsed"></div>
+            <div class="btn-row">
+              <button class="hint-btn" onclick="revealHint()">💡 Hint (-1pt)</button>
+              <button class="next-btn" onclick="nextPlayer()">⏭ Next Player</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_PLAYERS = [
+  {name:'Ronaldo',    flag:'🇵🇹',pos:'ST', rat:99,pac:91,sho:99,pas:80,dri:96,def:35,phy:88,club:'Icon',       emoji:'🐐',hints:['Portuguese legend','Won 5 Ballon d\'Or','Plays in Saudi Arabia']},
+  {name:'Messi',      flag:'🇦🇷',pos:'CAM',rat:99,pac:86,sho:96,pas:98,dri:99,def:36,phy:68,club:'Icon',       emoji:'🌟',hints:['Argentine magician','8 Ballon d\'Or wins','2022 World Cup winner']},
+  {name:'Mbappe',     flag:'🇫🇷',pos:'ST', rat:96,pac:99,sho:94,pas:82,dri:97,def:38,phy:81,club:'Real Madrid',emoji:'⚡',hints:['Fastest player alive','French superstar','Joined Real Madrid in 2024']},
+  {name:'Haaland',    flag:'🇳🇴',pos:'ST', rat:95,pac:89,sho:97,pas:66,dri:86,def:45,phy:95,club:'Man City',   emoji:'🔥',hints:['Goal machine','Norwegian striker','Plays for Man City']},
+  {name:'Neymar',     flag:'🇧🇷',pos:'LW', rat:94,pac:91,sho:87,pas:86,dri:99,def:30,phy:65,club:'Al-Hilal',   emoji:'🌀',hints:['Brazilian flair master','Former PSG star','Known for skill moves']},
+  {name:'De Bruyne',  flag:'🇧🇪',pos:'CM', rat:95,pac:78,sho:88,pas:98,dri:91,def:64,phy:77,club:'Man City',   emoji:'🎯',hints:['Belgian playmaker','Best passer in world','Man City captain']},
+  {name:'Salah',      flag:'🇪🇬',pos:'RW', rat:91,pac:94,sho:90,pas:81,dri:93,def:45,phy:74,club:'Liverpool',  emoji:'⚡',hints:['Egyptian King','Liverpool winger','Golden Boot winner']},
+  {name:'Vinicius',   flag:'🇧🇷',pos:'LW', rat:94,pac:97,sho:85,pas:78,dri:96,def:30,phy:72,club:'Real Madrid',emoji:'🌪️',hints:['Brazilian winger','Real Madrid star','2022 UCL final scorer']},
+  {name:'Bellingham', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',pos:'CM', rat:94,pac:82,sho:87,pas:88,dri:92,def:74,phy:86,club:'Real Madrid',emoji:'💥',hints:['English midfielder','Youngest at Real Madrid','Former Dortmund star']},
+  {name:'Lewandowski',flag:'🇵🇱',pos:'ST', rat:91,pac:78,sho:95,pas:79,dri:86,def:44,phy:82,club:'Barcelona',  emoji:'💪',hints:['Polish goal machine','Plays for Barcelona','Multiple Bundesliga top scorer']},
+  {name:'Benzema',    flag:'🇫🇷',pos:'CF', rat:91,pac:76,sho:93,pas:83,dri:91,def:38,phy:80,club:'Al-Ittihad', emoji:'🔥',hints:['2022 Ballon d\'Or winner','French striker','Former Real Madrid legend']},
+  {name:'Zidane',     flag:'🇫🇷',pos:'CAM',rat:98,pac:76,sho:87,pas:97,dri:98,def:66,phy:79,club:'Icon',       emoji:'💫',hints:['French maestro icon','World Cup 1998 winner','The Zidane turn']},
+];
+
+const TYPE_COLORS = {
+  gold:  ['#d4a843','#7a4f00','#f5d978'],
+  icon:  ['#b44aff','#6600cc','#e0aaff'],
+  toty:  ['#1a1aff','#0000aa','#7ab4ff'],
+  silver:['#b0b8c8','#5a6878','#dde4f0'],
+};
+
+function getColors(rat) {
+  if (rat >= 98) return TYPE_COLORS.icon;
+  if (rat >= 94) return TYPE_COLORS.toty;
+  if (rat >= 90) return TYPE_COLORS.gold;
+  return TYPE_COLORS.silver;
+}
+
+function buildCard(p, hideName=false) {
+  const [c1,c2,c3] = getColors(p.rat);
+  return `
+    <div class="fifa-card">
+      <div class="card-bg" style="background:linear-gradient(160deg,${c1} 0%,${c2} 55%,${c3} 100%)"></div>
+      <div class="holo"></div>
+      <div class="card-shine"></div>
+      <div class="card-inner">
+        <div class="c-top">
+          <div class="c-rating">${p.rat}</div>
+          <div class="c-pos">${p.pos}</div>
+          <div class="c-flag">${p.flag}</div>
+        </div>
+        <div class="c-photo">${p.emoji}</div>
+        <div class="c-name ${hideName?'name-blur':''}" id="guessName">${p.name.toUpperCase()}</div>
+        <div class="c-divider"></div>
+        <div class="c-stats">
+          <div class="c-stat"><span class="c-sv">${p.pac}</span><span class="c-sk">PAC</span></div>
+          <div class="c-stat"><span class="c-sv">${p.sho}</span><span class="c-sk">SHO</span></div>
+          <div class="c-stat"><span class="c-sv">${p.pas}</span><span class="c-sk">PAS</span></div>
+          <div class="c-stat"><span class="c-sv">${p.dri}</span><span class="c-sk">DRI</span></div>
+          <div class="c-stat"><span class="c-sv">${p.def}</span><span class="c-sk">DEF</span></div>
+          <div class="c-stat"><span class="c-sv">${p.phy}</span><span class="c-sk">PHY</span></div>
+        </div>
+        <div class="c-club">${p.club}</div>
+      </div>
+    </div>`;
+}
+
+// ── SPIN THE WHEEL ────────────────────────────────────────────────────
+const SEGMENTS = [
+  {label:'GOLD',   color:'#c8922a',pack:'gold'},
+  {label:'ICON',   color:'#8822dd',pack:'icon'},
+  {label:'TOTY',   color:'#0044ff',pack:'toty'},
+  {label:'IN FORM',color:'#1a9950',pack:'inform'},
+  {label:'GOLD',   color:'#c8922a',pack:'gold'},
+  {label:'ICON',   color:'#8822dd',pack:'icon'},
+  {label:'TOTY',   color:'#0044ff',pack:'toty'},
+  {label:'IN FORM',color:'#1a9950',pack:'inform'},
+];
+const NUM_SEG = SEGMENTS.length;
+const SEG_ANG = (2*Math.PI)/NUM_SEG;
+let wheelAngle=0, isSpinning=false;
+
+function drawWheel(angle) {
+  const canvas=document.getElementById('wheelCanvas');
+  const ctx=canvas.getContext('2d');
+  const cx=canvas.width/2, cy=canvas.height/2, r=cx-8;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  SEGMENTS.forEach((seg,i)=>{
+    const start=angle+i*SEG_ANG, end=start+SEG_ANG;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,start,end); ctx.closePath();
+    ctx.fillStyle=seg.color; ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.3)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(start+SEG_ANG/2);
+    ctx.textAlign='right'; ctx.fillStyle='#fff';
+    ctx.font='bold 11px "Bebas Neue",sans-serif';
+    ctx.shadowBlur=4; ctx.shadowColor='rgba(0,0,0,.5)';
+    ctx.fillText(seg.label,r-10,4); ctx.restore();
+  });
+  ctx.beginPath(); ctx.arc(cx,cy,28,0,Math.PI*2);
+  ctx.fillStyle='#04060f'; ctx.fill();
+  ctx.strokeStyle='#d4a843'; ctx.lineWidth=3; ctx.stroke();
+}
+drawWheel(0);
+
+function spinWheel() {
+  if(isSpinning) return;
+  isSpinning=true;
+  document.getElementById('spinBtn').disabled=true;
+  document.getElementById('wheelResult').textContent='';
+  document.getElementById('wheelResult').classList.remove('show');
+  const extraSpins=(Math.floor(Math.random()*5)+5)*2*Math.PI;
+  const targetExtra=Math.random()*2*Math.PI;
+  const total=extraSpins+targetExtra;
+  const duration=3500, start=performance.now(), startAngle=wheelAngle;
+  function animate(now) {
+    const elapsed=now-start, progress=Math.min(elapsed/duration,1);
+    const ease=1-Math.pow(1-progress,4);
+    wheelAngle=startAngle+total*ease;
+    drawWheel(wheelAngle);
+    if(progress<1){ requestAnimationFrame(animate); }
+    else {
+      isSpinning=false;
+      document.getElementById('spinBtn').disabled=false;
+      const normalized=(((-wheelAngle-Math.PI/2)%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+      const idx=Math.floor(normalized/SEG_ANG)%NUM_SEG;
+      const winner=SEGMENTS[idx];
+      const result=document.getElementById('wheelResult');
+      result.innerHTML=`You got: <span style="color:var(--gold2)">${winner.label} PACK</span> <a class="go-btn" href="pack.html">Open Pack →</a>`;
+      result.classList.add('show');
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+// ── RANDOM GENERATOR + SHARE ──────────────────────────────────────────
+let currentRandom=null;
+function generateRandom() {
+  const p=ALL_PLAYERS[Math.floor(Math.random()*ALL_PLAYERS.length)];
+  currentRandom=p;
+  document.getElementById('randomCardSlot').innerHTML=buildCard(p);
+  document.getElementById('shareRow').style.display='flex';
+  document.getElementById('randomInfo').style.display='block';
+  document.getElementById('randomInfo').textContent=`⭐ ${p.name} — ${p.pos} — OVR ${p.rat} — ${p.club}`;
+  document.getElementById('copiedMsg').classList.remove('show');
+}
+function shareWhatsApp() {
+  if(!currentRandom) return;
+  const p=currentRandom;
+  const msg=`🔥 Check out my ProKitCards idol!\n⚽ ${p.name} | ${p.pos} | OVR ${p.rat}\n📊 PAC:${p.pac} SHO:${p.sho} PAS:${p.pas} DRI:${p.dri} DEF:${p.def} PHY:${p.phy}\n🌐 ${window.location.origin}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+function shareTwitter() {
+  if(!currentRandom) return;
+  const p=currentRandom;
+  const msg=`🔥 Just generated ${p.name} (OVR ${p.rat}) on ProKitCards! PAC:${p.pac} SHO:${p.sho} DRI:${p.dri} 🐐 #ProKitCards #FIFA`;
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(msg)}`,'_blank');
+}
+function copyLink() {
+  const text=currentRandom?`Check my ProKitCards idol: ${currentRandom.name} OVR ${currentRandom.rat}! ${window.location.origin}`:window.location.href;
+  navigator.clipboard.writeText(text).then(()=>{
+    const msg=document.getElementById('copiedMsg');
+    msg.classList.add('show'); setTimeout(()=>msg.classList.remove('show'),3000);
+  });
+}
+
+// ── GUESS THE PLAYER ──────────────────────────────────────────────────
+let guessPlayer=null, guessScore=0, guessWrong=0, hintsRevealed=0, guessOver=false;
+function loadGuessPlayer() {
+  guessPlayer=ALL_PLAYERS[Math.floor(Math.random()*ALL_PLAYERS.length)];
+  hintsRevealed=0; guessOver=false;
+  document.getElementById('guessCardSlot').innerHTML=buildCard(guessPlayer,true);
+  document.getElementById('revealOverlay').style.display='block';
+  document.getElementById('guessFeedback').textContent='';
+  document.getElementById('guessFeedback').className='guess-feedback';
+  document.getElementById('guessInput').value='';
+  document.getElementById('hintsUsed').textContent='';
+  document.getElementById('guessInput').disabled=false;
+  const stats=['pac','sho','pas','dri','def','phy'];
+  const html=stats.map(s=>`
+    <div class="hint-stat-row">
+      <span class="hint-stat-label">${s.toUpperCase()}</span>
+      <div class="hint-stat-bar"><div class="hint-stat-fill" style="width:${guessPlayer[s]}%"></div></div>
+      <span class="hint-stat-val">${guessPlayer[s]}</span>
+    </div>`).join('');
+  document.getElementById('statsHint').innerHTML='<h4>📊 Stats Clue</h4>'+html;
+  updateScore();
+}
+function submitGuess() {
+  if(guessOver) return;
+  const input=document.getElementById('guessInput').value.trim().toLowerCase();
+  if(!input) return;
+  const correct=guessPlayer.name.toLowerCase();
+  const fb=document.getElementById('guessFeedback');
+  if(input===correct||correct.includes(input)||input.includes(correct.split(' ')[0].toLowerCase())){
+    fb.textContent=`✅ Correct! It's ${guessPlayer.name}!`;
+    fb.className='guess-feedback correct';
+    guessScore+=Math.max(1,3-hintsRevealed); guessOver=true;
+    document.getElementById('guessInput').disabled=true;
+    document.getElementById('revealOverlay').style.display='none';
+    const nameEl=document.getElementById('guessName');
+    if(nameEl) nameEl.classList.remove('name-blur');
+  } else {
+    fb.textContent='❌ Wrong! Try again...';
+    fb.className='guess-feedback wrong'; guessWrong++;
+  }
+  updateScore(); document.getElementById('guessInput').value='';
+}
+function revealHint() {
+  if(guessOver||hintsRevealed>=guessPlayer.hints.length) return;
+  document.getElementById('hintsUsed').textContent=`💡 Hint ${hintsRevealed+1}: ${guessPlayer.hints[hintsRevealed++]}`;
+}
+function nextPlayer() { loadGuessPlayer(); }
+function updateScore() {
+  document.getElementById('scoreNum').textContent=guessScore;
+  document.getElementById('wrongNum').textContent=guessWrong;
+}
+
+generateRandom();
+loadGuessPlayer();
+</script>
+</body>
+</html>
